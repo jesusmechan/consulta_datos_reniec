@@ -14,6 +14,7 @@ namespace WinFormsApp1
     public class Metodos
     {
         string apiUrl = "https://api.apis.net.pe/v2/reniec/dni?numero=";
+        string apiUrlSunat = "https://api.apis.net.pe/v2/sunat/ruc/full?numero";
 
 
         List<jsonKeys> jsonKeys = null;
@@ -115,5 +116,41 @@ namespace WinFormsApp1
             }
             return entidad;
         }
+
+
+        public async Task<respuestaSunat> ConsultaDatosSunat(string numeroDocumento)
+        {
+            obtenerKey();
+            respuestaSunat entidad = new respuestaSunat();
+            using (HttpClient client = new HttpClient())
+            {
+                try
+                {
+                    // Configura el encabezado "Authorization" con el token de tipo Bearer
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", key);
+                    // Realiza una solicitud GET al servicio
+                    HttpResponseMessage response = await client.GetAsync(apiUrlSunat + numeroDocumento);
+                    // Verifica si la solicitud fue exitosa (código de estado 200)
+                    if (response.IsSuccessStatusCode)
+                    {
+                        // Lee el contenido de la respuesta como una cadena
+                        string responseBody = await response.Content.ReadAsStringAsync();
+                        entidad = JsonConvert.DeserializeObject<respuestaSunat>(responseBody);
+                        Console.WriteLine("Respuesta del servicio:");
+                        Console.WriteLine(responseBody);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Error en la solicitud. Código de estado: " + response.StatusCode);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error: " + ex.Message);
+                }
+            }
+            return entidad;
+        }
+
     }
 }
